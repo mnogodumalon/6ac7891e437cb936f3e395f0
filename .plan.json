@@ -1,0 +1,220 @@
+{
+  "version": 1,
+  "language": "de",
+  "understanding": {
+    "summary": "Die Anwendung verwaltet das Inventar der Werkstatt: Werkzeuge, Maschinen, Messgeräte und Verbrauchsmaterial mit Lagerort, Lieferant und aktuellem Bestand. Jede Entnahme, Rückgabe oder Lieferung wird als Bestandsbewegung festgehalten, damit jederzeit klar ist, was wo liegt und was nachbestellt oder geprüft werden muss.",
+    "roles": [
+      "Werkstattleitung",
+      "Mitarbeiter der Werkstatt"
+    ],
+    "main_tasks": [
+      "Artikel mit Lagerort und Lieferant pflegen",
+      "Entnahmen, Rückgaben und Wareneingänge erfassen",
+      "Artikel unter Mindestbestand erkennen",
+      "Fällige Prüfungen und Wartungen im Blick behalten"
+    ],
+    "platform_roles": [
+      {
+        "persona": "Werkstattleitung",
+        "role": "administrator",
+        "apps": [
+          "artikel",
+          "lagerorte",
+          "lieferanten",
+          "bestandsbewegungen"
+        ]
+      },
+      {
+        "persona": "Mitarbeiter der Werkstatt",
+        "role": "standard",
+        "apps": [
+          "bestandsbewegungen",
+          "artikel"
+        ]
+      }
+    ]
+  },
+  "flows": [
+    {
+      "slug": "entnahme-erfassen",
+      "label": {
+        "de": "Entnahme erfassen",
+        "en": "Record withdrawal"
+      },
+      "description": "Ein Mitarbeiter entnimmt einen Artikel aus dem Lager. Der Ablauf prüft den Bestand und legt die Bestandsbewegung an.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "bestandsbewegungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "artikel": "picked",
+            "bewegungsart": "fixed:entnahme",
+            "zeitpunkt": "derived:now",
+            "menge": "user",
+            "person_vorname": "user",
+            "person_nachname": "user",
+            "verwendungszweck": "user",
+            "bemerkungen": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `entnahme-erfassen` — Entnahme erfassen\nEin Mitarbeiter entnimmt einen Artikel aus dem Lager. Der Ablauf prüft den Bestand und legt die Bestandsbewegung an.\n\n## Your hook — import it, never rebuild what it owns\n`import { useEntnahmeErfassenFlow } from '@/lib/journey/flows/EntnahmeErfassen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: artikel), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Artikel auswählen\n2. Menge eingeben\n3. Name und Verwendungszweck angeben\n4. Bestand prüfen und speichern\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `bestandsbewegungen`:\n    - `artikel`: from the record the user picks in this flow\n    - `bewegungsart`: fixed value `entnahme` — set it in the plan step's values, never ask\n    - `zeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `menge`: the user enters it (bind it through the layer: form.field/…)\n    - `person_vorname`: the user enters it (bind it through the layer: form.field/…)\n    - `person_nachname`: the user enters it (bind it through the layer: form.field/…)\n    - `verwendungszweck`: the user enters it (bind it through the layer: form.field/…)\n    - `bemerkungen`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `artikel` columns bezeichnung, artikelnummer, bestand, einheit, lagerort\n\n## Checks BEFORE the write (block the submit with the message when they fail)\n- stock_sufficient (stock=`artikel.bestand`, quantity=`bestandsbewegungen.menge`) — message: „Nicht genug Bestand für diese Menge vorhanden.“\n\n## Success page\n- shows: `bestandsbewegungen.artikel`, `bestandsbewegungen.menge`\n- next flows to offer: `rueckgabe-erfassen`\n\n## Never write these — another flow or a tool owns them\n- `artikel.bestand` (owner: tool `bestand-nachfuehren`)\n- `artikel.zustand` (owner: tool `pruefung-zustand-pruefen`)\n"
+    },
+    {
+      "slug": "rueckgabe-erfassen",
+      "label": {
+        "de": "Rückgabe erfassen",
+        "en": "Record return"
+      },
+      "description": "Ein Mitarbeiter bringt einen Artikel zurück ins Lager und der Bestand wird erhöht.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "bestandsbewegungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "artikel": "picked",
+            "bewegungsart": "fixed:rueckgabe",
+            "zeitpunkt": "derived:now",
+            "menge": "user",
+            "person_vorname": "user",
+            "person_nachname": "user",
+            "verwendungszweck": "user",
+            "bemerkungen": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `rueckgabe-erfassen` — Rückgabe erfassen\nEin Mitarbeiter bringt einen Artikel zurück ins Lager und der Bestand wird erhöht.\n\n## Your hook — import it, never rebuild what it owns\n`import { useRueckgabeErfassenFlow } from '@/lib/journey/flows/RueckgabeErfassen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: artikel), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Artikel auswählen\n2. Menge eingeben\n3. Name angeben\n4. Rückgabe speichern\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `bestandsbewegungen`:\n    - `artikel`: from the record the user picks in this flow\n    - `bewegungsart`: fixed value `rueckgabe` — set it in the plan step's values, never ask\n    - `zeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `menge`: the user enters it (bind it through the layer: form.field/…)\n    - `person_vorname`: the user enters it (bind it through the layer: form.field/…)\n    - `person_nachname`: the user enters it (bind it through the layer: form.field/…)\n    - `verwendungszweck`: the user enters it (bind it through the layer: form.field/…)\n    - `bemerkungen`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `artikel` columns bezeichnung, artikelnummer, bestand, einheit, lagerort\n\n## Success page\n- shows: `bestandsbewegungen.artikel`, `bestandsbewegungen.menge`\n- next flows to offer: `entnahme-erfassen`\n\n## Never write these — another flow or a tool owns them\n- `artikel.bestand` (owner: tool `bestand-nachfuehren`)\n- `artikel.zustand` (owner: tool `pruefung-zustand-pruefen`)\n"
+    },
+    {
+      "slug": "wareneingang-erfassen",
+      "label": {
+        "de": "Wareneingang erfassen",
+        "en": "Record goods receipt"
+      },
+      "description": "Eine Lieferung trifft ein; der Artikel wird gewählt und die gelieferte Menge als Bewegung gebucht.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "bestandsbewegungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "artikel": "picked",
+            "bewegungsart": "fixed:wareneingang",
+            "zeitpunkt": "derived:now",
+            "menge": "user",
+            "person_vorname": "user",
+            "person_nachname": "user",
+            "verwendungszweck": "user",
+            "bemerkungen": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `wareneingang-erfassen` — Wareneingang erfassen\nEine Lieferung trifft ein; der Artikel wird gewählt und die gelieferte Menge als Bewegung gebucht.\n\n## Your hook — import it, never rebuild what it owns\n`import { useWareneingangErfassenFlow } from '@/lib/journey/flows/WareneingangErfassen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: artikel), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Artikel auswählen\n2. Gelieferte Menge eingeben\n3. Name und Bemerkung angeben\n4. Wareneingang speichern\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `bestandsbewegungen`:\n    - `artikel`: from the record the user picks in this flow\n    - `bewegungsart`: fixed value `wareneingang` — set it in the plan step's values, never ask\n    - `zeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `menge`: the user enters it (bind it through the layer: form.field/…)\n    - `person_vorname`: the user enters it (bind it through the layer: form.field/…)\n    - `person_nachname`: the user enters it (bind it through the layer: form.field/…)\n    - `verwendungszweck`: the user enters it (bind it through the layer: form.field/…)\n    - `bemerkungen`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `artikel` columns bezeichnung, artikelnummer, bestand, mindestbestand, lieferant\n\n## Success page\n- shows: `bestandsbewegungen.artikel`, `bestandsbewegungen.menge`\n- next flows to offer: `entnahme-erfassen`\n\n## Never write these — another flow or a tool owns them\n- `artikel.bestand` (owner: tool `bestand-nachfuehren`)\n- `artikel.zustand` (owner: tool `pruefung-zustand-pruefen`)\n"
+    },
+    {
+      "slug": "artikel-aussondern",
+      "label": {
+        "de": "Artikel aussondern",
+        "en": "Discard item"
+      },
+      "description": "Ein defekter oder nicht mehr nutzbarer Artikel wird ausgesondert und der Bestand reduziert.",
+      "priority": "nice",
+      "writes": [
+        {
+          "entity": "bestandsbewegungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "artikel": "picked",
+            "bewegungsart": "fixed:aussonderung",
+            "zeitpunkt": "derived:now",
+            "menge": "user",
+            "person_vorname": "user",
+            "person_nachname": "user",
+            "verwendungszweck": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `artikel-aussondern` — Artikel aussondern\nEin defekter oder nicht mehr nutzbarer Artikel wird ausgesondert und der Bestand reduziert.\n\n## Your hook — import it, never rebuild what it owns\n`import { useArtikelAussondernFlow } from '@/lib/journey/flows/ArtikelAussondern';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: artikel), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Artikel auswählen\n2. Menge und Grund angeben\n3. Aussonderung speichern\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `bestandsbewegungen`:\n    - `artikel`: from the record the user picks in this flow\n    - `bewegungsart`: fixed value `aussonderung` — set it in the plan step's values, never ask\n    - `zeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `menge`: the user enters it (bind it through the layer: form.field/…)\n    - `person_vorname`: the user enters it (bind it through the layer: form.field/…)\n    - `person_nachname`: the user enters it (bind it through the layer: form.field/…)\n    - `verwendungszweck`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `artikel` columns bezeichnung, bestand, zustand\n\n## Checks BEFORE the write (block the submit with the message when they fail)\n- stock_sufficient (stock=`artikel.bestand`, quantity=`bestandsbewegungen.menge`) — message: „Nicht genug Bestand für diese Menge vorhanden.“\n- stock_sufficient (stock=`artikel.bestand`, quantity=`bestandsbewegungen.menge`) — message: „Es kann nicht mehr ausgesondert werden, als im Bestand ist.“\n\n## Success page\n- shows: `bestandsbewegungen.artikel`\n\n## Never write these — another flow or a tool owns them\n- `bestandsbewegungen.bemerkungen` (owner: intent `entnahme-erfassen`)\n- `artikel.bestand` (owner: tool `bestand-nachfuehren`)\n- `artikel.zustand` (owner: tool `pruefung-zustand-pruefen`)\n"
+    }
+  ],
+  "public_pages": [],
+  "tools": [
+    {
+      "id": "bestand-nachfuehren",
+      "purpose": "Bei jeder neuen Bestandsbewegung wird der Bestand des Artikels angepasst: Wareneingang und Rückgabe erhöhen, Entnahme und Aussonderung verringern, Korrektur setzt den Bestand auf die erfasste Menge. Die Flows schreiben den Bestand nicht selbst."
+    },
+    {
+      "id": "pruefung-zustand-pruefen",
+      "purpose": "Täglich werden Artikel, deren nächste Prüfung bzw. Wartung überschritten ist und deren Zustand noch „neu“ oder „gut“ ist, auf „reparaturbedürftig“ gesetzt, damit sie auffallen."
+    },
+    {
+      "id": "mindestbestand-mail",
+      "purpose": "Täglich eine Sammelmail an den Schlüsselinhaber mit allen Artikeln, deren Bestand unter dem Mindestbestand liegt. Es wird nichts geschrieben."
+    }
+  ],
+  "covered_by_platform": [
+    {
+      "wish": "Artikel, Lagerorte und Lieferanten verwalten",
+      "feature": "record_form"
+    },
+    {
+      "wish": "Artikel suchen und filtern",
+      "feature": "search_filter"
+    },
+    {
+      "wish": "Übersicht aller Artikel und Bewegungen",
+      "feature": "list_page"
+    },
+    {
+      "wish": "Artikel pro Kategorie oder Lagerort zählen",
+      "feature": "distribution_view"
+    },
+    {
+      "wish": "Inventarliste als Excel oder CSV",
+      "feature": "csv_json_export"
+    }
+  ],
+  "ownership": {
+    "bestandsbewegungen": {
+      "artikel": "intent:artikel-aussondern",
+      "bewegungsart": "intent:artikel-aussondern",
+      "zeitpunkt": "intent:artikel-aussondern",
+      "menge": "intent:artikel-aussondern",
+      "person_vorname": "intent:artikel-aussondern",
+      "person_nachname": "intent:artikel-aussondern",
+      "verwendungszweck": "intent:artikel-aussondern",
+      "bemerkungen": "intent:wareneingang-erfassen"
+    },
+    "artikel": {
+      "bestand": "tool:bestand-nachfuehren",
+      "zustand": "tool:pruefung-zustand-pruefen"
+    }
+  },
+  "dashboard": {
+    "focus": [
+      "Artikel unter Mindestbestand",
+      "Fällige Prüfungen und Wartungen",
+      "Letzte Bestandsbewegungen",
+      "Defekte oder reparaturbedürftige Artikel"
+    ],
+    "hints": [
+      "Bestand und Mindestbestand nebeneinander zeigen",
+      "Nächste Prüfung hervorheben, wenn sie in den kommenden 30 Tagen liegt"
+    ],
+    "wishes": []
+  }
+}

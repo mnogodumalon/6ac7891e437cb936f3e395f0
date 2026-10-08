@@ -1,0 +1,46 @@
+{
+  "LagerorteDialog.tsx": {
+    "bezeichnung": "z. B. Hauptlager Werkstatt",
+    "raum": "z. B. Halle 2",
+    "regal": "z. B. R-04",
+    "fach": "z. B. Fach 3",
+    "bemerkungen": "Hinweise zum Lagerort"
+  },
+  "LieferantenDialog.tsx": {
+    "firmenname": "z. B. Müller Werkzeuge GmbH",
+    "ansprechpartner_vorname": "z. B. Anna",
+    "ansprechpartner_nachname": "z. B. Schmidt",
+    "email": "z. B. info@mueller-werkzeuge.de",
+    "strasse": "z. B. Hauptstraße",
+    "hausnummer": "z. B. 12a",
+    "plz": "z. B. 80331",
+    "ort": "z. B. München",
+    "webseite": "z. B. https://www.beispiel.de"
+  },
+  "ArtikelDialog.tsx": {
+    "bezeichnung": "z. B. Akkuschrauber",
+    "artikelnummer": "z. B. ART-0001",
+    "kategorie": "z. B. Handwerkzeug, Maschine",
+    "hersteller": "z. B. Bosch",
+    "modell": "z. B. GSR 18V",
+    "seriennummer": "z. B. SN-123456",
+    "bestand": "z. B. 12",
+    "mindestbestand": "z. B. 3",
+    "einheit": "z. B. Stück, Packung",
+    "anschaffungsdatum": "Wann wurde er gekauft?",
+    "anschaffungspreis": "z. B. 149,90",
+    "naechste_pruefung": "Wann ist die nächste Prüfung?",
+    "lagerort": "Welcher Lagerort?",
+    "lieferant": "Welcher Lieferant?",
+    "bemerkungen": "Notizen zum Artikel"
+  },
+  "BestandsbewegungenDialog.tsx": {
+    "artikel": "Welcher Artikel?",
+    "zeitpunkt": "Wann fand die Bewegung statt?",
+    "menge": "z. B. 5",
+    "person_vorname": "z. B. Thomas",
+    "person_nachname": "z. B. Becker",
+    "verwendungszweck": "z. B. Auftrag 2026-014",
+    "bemerkungen": "Weitere Hinweise zur Bewegung"
+  }
+}
