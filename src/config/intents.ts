@@ -20,6 +20,7 @@
 import type { ComponentType } from 'react';
 
 // <custom:intent-imports>
+import { IconPackageExport, IconPackageImport, IconTruckDelivery, IconTrash } from '@tabler/icons-react';
 // </custom:intent-imports>
 
 export interface IntentLink {
@@ -42,6 +43,10 @@ export interface IntentLink {
 
 export const INTENTS: IntentLink[] = [
   // <custom:intents>
+  { path: '/intents/entnahme-erfassen', label: { de: 'Entnahme erfassen', en: 'Record withdrawal' }, icon: IconPackageExport, description: 'Entnahme eines Artikels erfassen und Bestand prüfen' },
+  { path: '/intents/rueckgabe-erfassen', label: { de: 'Rückgabe erfassen', en: 'Record return' }, icon: IconPackageImport, description: 'Rückgabe eines Artikels ins Lager erfassen' },
+  { path: '/intents/wareneingang-erfassen', label: { de: 'Wareneingang erfassen', en: 'Record goods receipt' }, icon: IconTruckDelivery, description: 'Eingehende Lieferung als Bestandsbewegung buchen' },
+  { path: '/intents/artikel-aussondern', label: { de: 'Artikel aussondern', en: 'Discard item' }, icon: IconTrash, description: 'Defekten Artikel aussondern und Bestand reduzieren' },
   // </custom:intents>
 ];
 
@@ -52,7 +57,7 @@ export const INTENTS: IntentLink[] = [
  * purpose — a scaffold update resets it to false (self-healing if Phase 2
  * never ran).
  */
-export const INTENTS_PENDING = true;
+export const INTENTS_PENDING = false;
 
 /**
  * When the Phase-1 bundle was deployed (ISO, set by the service together with
